@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyCast Weather</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Poppins',sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+  padding:20px;
+  position:relative;
+  transition:1s ease;
+}
+
+/* ================= DAY BACKGROUND ================= */
+
+body.day{
+  background:
+  linear-gradient(
+    to bottom,
+    #4facfe 0%,
+    #38bdf8 30%,
+    #0ea5e9 65%,
+    #0284c7 100%
+  );
+}
+
+/* ================= NIGHT BACKGROUND ================= */
+
+body.night{
+  background:
+  linear-gradient(
+    to bottom,
+    #020617 0%,
+    #0f172a 40%,
+    #111827 70%,
+    #1e293b 100%
+  );
+}
+
+/* ================= STARS ================= */
+
+.stars{
+  position:absolute;
+  width:100%;
+  height:100%;
+  top:0;
+  left:0;
+  overflow:hidden;
+  display:none;
+}
+
+.star{
+  position:absolute;
+  width:3px;
+  height:3px;
+  background:white;
+  border-radius:50%;
+  animation:blink 2s infinite alternate;
+}
+
+@keyframes blink{
+  from{
+    opacity:0.2;
+  }
+
+  to{
+    opacity:1;
+  }
+}
+
+body.night .stars{
+  display:block;
+}
+
+/* ================= SUN ================= */
+
+.sun{
+  position:absolute;
+  top:60px;
+  right:80px;
+  width:160px;
+  height:160px;
+  border-radius:50%;
+  background:#ffd93d;
+
+  box-shadow:
+  0 0 50px #ffd93d,
+  0 0 100px #ffd93d,
+  0 0 150px #ffd93d;
+
+  animation:float 5s ease-in-out infinite;
+}
+
+/* ================= MOON ================= */
+
+.moon{
+  position:absolute;
+  top:70px;
+  right:90px;
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  background:#f8fafc;
+
+  box-shadow:
+  0 0 40px #f8fafc,
+  0 0 80px #f8fafc,
+  0 0 120px #f8fafc;
+
+  display:none;
+
+  animation:float 5s ease-in-out infinite;
+}
+
+body.night .sun{
+  display:none;
+}
+
+body.night .moon{
+  display:block;
+}
+
+@keyframes float{
+
+  0%,100%{
+    transform:translateY(0px);
+  }
+
+  50%{
+    transform:translateY(-12px);
+  }
+
+}
+
+/* ================= MAIN CONTAINER ================= */
+
+.container{
+  width:100%;
+  max-width:1150px;
+
+  background:rgba(255,255,255,0.12);
+
+  backdrop-filter:blur(20px);
+
+  border-radius:35px;
+
+  padding:30px;
+
+  color:white;
+
+  z-index:10;
+
+  position:relative;
+
+  box-shadow:0 10px 40px rgba(0,0,0,0.25);
+
+  border:1px solid rgba(255,255,255,0.15);
+
+  overflow:hidden;
+}
+
+/* GLASS SHINE */
+
+.container::before{
+  content:'';
+
+  position:absolute;
+
+  inset:0;
+
+  background:
+  linear-gradient(
+    120deg,
+    rgba(255,255,255,0.18),
+    transparent,
+    rgba(255,255,255,0.06)
+  );
+
+  pointer-events:none;
+}
+
+/* ================= TOP ================= */
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:20px;
+}
+
+.logo{
+  font-size:2rem;
+  font-weight:700;
+}
+
+.search-box{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.search-box input{
+  width:260px;
+
+  padding:14px;
+
+  border:none;
+
+  outline:none;
+
+  border-radius:15px;
+
+  font-size:1rem;
+
+  background:rgba(255,255,255,0.95);
+
+  color:#111827;
+
+  box-shadow:0 4px 15px rgba(0,0,0,0.15);
+}
+
+.search-box button{
+
+  border:none;
+
+  padding:14px 20px;
+
+  border-radius:15px;
+
+  color:white;
+
+  font-weight:600;
+
+  cursor:pointer;
+
+  transition:0.3s ease;
+}
+
+/* SEARCH BUTTON */
+
+#searchBtn{
+  background:#2563eb;
+}
+
+/* LOCATION BUTTON */
+
+#locationBtn{
+
+  background:
+  linear-gradient(
+    135deg,
+    #06b6d4,
+    #2563eb
+  );
+
+}
+
+.search-box button:hover{
+
+  transform:translateY(-2px) scale(1.03);
+
+}
+
+#locationBtn:hover{
+
+  box-shadow:
+  0 0 15px rgba(37,99,235,0.6),
+  0 0 35px rgba(6,182,212,0.4);
+
+}
+
+/* ================= WEATHER ================= */
+
+.weather-box{
+
+  margin-top:25px;
+
+  background:rgba(255,255,255,0.10);
+
+  border-radius:30px;
+
+  padding:30px;
+
+  border:1px solid rgba(255,255,255,0.15);
+
+}
+
+.city-time{
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.city{
+  font-size:2.8rem;
+  font-weight:700;
+}
+
+.time{
+  font-size:1rem;
+}
+
+.main-weather{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:25px;
+  margin-top:30px;
+}
+
+.left-weather{
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+
+.left-weather img{
+  width:130px;
+  animation:weatherFloat 4s ease-in-out infinite;
+}
+
+@keyframes weatherFloat{
+
+  0%,100%{
+    transform:translateY(0px);
+  }
+
+  50%{
+    transform:translateY(-12px);
+  }
+
+}
+
+.temp{
+  font-size:5rem;
+  font-weight:700;
+}
+
+.desc{
+  font-size:1.3rem;
+  text-transform:capitalize;
+}
+
+/* ================= DETAILS ================= */
+
+.details{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+}
+
+.card{
+
+  background:rgba(255,255,255,0.12);
+
+  padding:18px;
+
+  border-radius:20px;
+
+  min-width:180px;
+
+  transition:0.3s ease;
+}
+
+.card:hover{
+
+  transform:translateY(-6px);
+
+  background:rgba(255,255,255,0.18);
+
+}
+
+.card-title{
+  opacity:0.8;
+  margin-bottom:6px;
+}
+
+.card-value{
+  font-size:1.2rem;
+  font-weight:700;
+}
+
+/* ================= FORECAST ================= */
+
+.forecast-title{
+  margin-top:35px;
+  margin-bottom:20px;
+  font-size:1.8rem;
+  font-weight:700;
+}
+
+.forecast{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:18px;
+}
+
+.forecast-card{
+
+  background:rgba(255,255,255,0.10);
+
+  border-radius:25px;
+
+  padding:20px;
+
+  text-align:center;
+
+  transition:0.3s ease;
+
+  border:1px solid rgba(255,255,255,0.12);
+
+}
+
+.forecast-card:hover{
+
+  transform:translateY(-8px) scale(1.03);
+
+  background:rgba(255,255,255,0.18);
+
+}
+
+.forecast-card img{
+  width:70px;
+}
+
+.forecast-day{
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+/* ================= LOADER ================= */
+
+.loader{
+
+  width:60px;
+
+  height:60px;
+
+  border:6px solid rgba(255,255,255,0.3);
+
+  border-top:6px solid white;
+
+  border-radius:50%;
+
+  animation:spin 1s linear infinite;
+
+  margin:40px auto;
+}
+
+@keyframes spin{
+
+  100%{
+    transform:rotate(360deg);
+  }
+
+}
+
+/* ================= ERROR ================= */
+
+.error{
+  margin-top:15px;
+  background:#ff4d4d;
+  padding:14px;
+  border-radius:15px;
+  text-align:center;
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:768px){
+
+  .temp{
+    font-size:3.5rem;
+  }
+
+  .city{
+    font-size:2rem;
+  }
+
+  .details{
+    grid-template-columns:1fr;
+  }
+
+}
+
+@media(max-width:500px){
+
+  .top{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .search-box input{
+    width:100%;
+  }
+
+  .main-weather{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .left-weather{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+}
+
+</style>
+</head>
+
+<body class="day">
+
+<!-- STARS -->
+<div class="stars" id="stars"></div>
+
+<!-- SUN -->
+<div class="sun"></div>
+
+<!-- MOON -->
+<div class="moon"></div>
+
+<div class="container">
+
+  <div class="top">
+
+    <div class="logo">
+      🌤 SkyCast Weather
+    </div>
+
+    <div class="search-box">
+
+      <input
+      type="text"
+      id="cityInput"
+      placeholder="Search city..."
+      >
+
+      <button id="searchBtn">
+        Search
+      </button>
+
+      <button id="locationBtn">
+        📍 My Location
+      </button>
+
+    </div>
+
+  </div>
+
+  <div id="error"></div>
+
+  <div class="weather-box" id="weatherBox">
+
+    <div class="loader"></div>
+
+  </div>
+
+  <div class="forecast-title">
+    📅 5 Day Forecast
+  </div>
+
+  <div class="forecast" id="forecastBox"></div>
+
+</div>
+
+<script>
+
+const API_KEY =
+"b5941370cf5ae22588e4cdb1b95c25cc";
+
+const weatherBox =
+document.getElementById("weatherBox");
+
+const forecastBox =
+document.getElementById("forecastBox");
+
+const errorBox =
+document.getElementById("error");
+
+const cityInput =
+document.getElementById("cityInput");
+
+const searchBtn =
+document.getElementById("searchBtn");
+
+const locationBtn =
+document.getElementById("locationBtn");
+
+/* ================= STARS ================= */
+
+const starsContainer =
+document.getElementById("stars");
+
+for(let i=0;i<150;i++){
+
+  const star =
+  document.createElement("div");
+
+  star.classList.add("star");
+
+  star.style.top =
+  Math.random()*100 + "%";
+
+  star.style.left =
+  Math.random()*100 + "%";
+
+  star.style.animationDuration =
+  (Math.random()*3+2)+"s";
+
+  starsContainer.appendChild(star);
+
+}
+
+/* ================= ERROR ================= */
+
+function showError(message){
+
+  errorBox.innerHTML = `
+    <div class="error">
+      ⚠ ${message}
+    </div>
+  `;
+
+  setTimeout(()=>{
+
+    errorBox.innerHTML = "";
+
+  },3000);
+
+}
+
+/* ================= LOADER ================= */
+
+function showLoader(){
+
+  weatherBox.innerHTML = `
+    <div class="loader"></div>
+  `;
+
+}
+
+/* ================= EXACT TIME ================= */
+
+function getCityTime(timezone){
+
+  const now = new Date();
+
+  const utc =
+    now.getTime() +
+    (now.getTimezoneOffset()*60000);
+
+  const cityDate =
+    new Date(utc + timezone*1000);
+
+  return cityDate.toLocaleString([],{
+    weekday:'short',
+    day:'2-digit',
+    month:'short',
+    year:'numeric',
+    hour:'2-digit',
+    minute:'2-digit',
+    second:'2-digit'
+  });
+
+}
+
+/* ================= DAY NIGHT ================= */
+
+function setTheme(icon){
+
+  if(icon.includes("n")){
+
+    document.body.classList.remove("day");
+
+    document.body.classList.add("night");
+
+  }else{
+
+    document.body.classList.remove("night");
+
+    document.body.classList.add("day");
+
+  }
+
+}
+
+/* ================= WEATHER UI ================= */
+
+function renderWeather(data){
+
+  const icon =
+  data.weather[0].icon;
+
+  setTheme(icon);
+
+  weatherBox.innerHTML = `
+
+    <div class="city-time">
+
+      <div class="city">
+        ${data.name}, ${data.sys.country}
+      </div>
+
+      <div class="time">
+        🕒 ${getCityTime(data.timezone)}
+      </div>
+
+    </div>
+
+    <div class="main-weather">
+
+      <div class="left-weather">
+
+        <img
+        src="https://openweathermap.org/img/wn/${icon}@4x.png"
+        >
+
+        <div>
+
+          <div class="temp">
+            ${Math.round(data.main.temp)}°C
+          </div>
+
+          <div class="desc">
+            ${data.weather[0].description}
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="details">
+
+        <div class="card">
+          <div class="card-title">
+            💧 Humidity
+          </div>
+
+          <div class="card-value">
+            ${data.main.humidity}%
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            🌬 Wind Speed
+          </div>
+
+          <div class="card-value">
+            ${data.wind.speed} m/s
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            🌡 Feels Like
+          </div>
+
+          <div class="card-value">
+            ${Math.round(data.main.feels_like)}°C
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            ☁ Pressure
+          </div>
+
+          <div class="card-value">
+            ${data.main.pressure} hPa
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            👀 Visibility
+          </div>
+
+          <div class="card-value">
+            ${(data.visibility/1000).toFixed(1)} km
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            🌅 Sunrise
+          </div>
+
+          <div class="card-value">
+            ${new Date(
+              data.sys.sunrise*1000
+            ).toLocaleTimeString([],{
+              hour:'2-digit',
+              minute:'2-digit'
+            })}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+/* ================= FORECAST ================= */
+
+function renderForecast(list){
+
+  forecastBox.innerHTML = "";
+
+  const dailyData = [];
+
+  for(let i=0;i<list.length;i+=8){
+
+    dailyData.push(list[i]);
+
+  }
+
+  dailyData.slice(0,5).forEach(day=>{
+
+    const date =
+    new Date(day.dt*1000);
+
+    const dayName =
+    date.toLocaleDateString([],{
+      weekday:'short'
+    });
+
+    forecastBox.innerHTML += `
+
+      <div class="forecast-card">
+
+        <div class="forecast-day">
+          ${dayName}
+        </div>
+
+        <img
+        src="https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png"
+        >
+
+        <h2>
+          ${Math.round(day.main.temp)}°C
+        </h2>
+
+        <p>
+          ${day.weather[0].description}
+        </p>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+/* ================= CITY WEATHER ================= */
+
+async function getWeather(city){
+
+  try{
+
+    showLoader();
+
+    const weatherResponse =
+    await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+    );
+
+    if(!weatherResponse.ok){
+
+      throw new Error(
+        "City not found"
+      );
+
+    }
+
+    const weatherData =
+    await weatherResponse.json();
+
+    const forecastResponse =
+    await fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&units=metric`
+    );
+
+    const forecastData =
+    await forecastResponse.json();
+
+    renderWeather(weatherData);
+
+    renderForecast(
+      forecastData.list
+    );
+
+  }
+  catch(error){
+
+    showError(error.message);
+
+  }
+
+}
+
+/* ================= LOCATION WEATHER ================= */
+
+async function getLocationWeather(lat,lon){
+
+  try{
+
+    showLoader();
+
+    const weatherResponse =
+    await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+    );
+
+    const weatherData =
+    await weatherResponse.json();
+
+    const forecastResponse =
+    await fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+    );
+
+    const forecastData =
+    await forecastResponse.json();
+
+    renderWeather(weatherData);
+
+    renderForecast(
+      forecastData.list
+    );
+
+  }
+  catch(error){
+
+    showError(
+      "Location weather failed"
+    );
+
+  }
+
+}
+
+/* ================= SEARCH ================= */
+
+searchBtn.addEventListener("click",()=>{
+
+  const city =
+  cityInput.value.trim();
+
+  if(city){
+
+    getWeather(city);
+
+  }else{
+
+    showError(
+      "Enter city name"
+    );
+
+  }
+
+});
+
+/* ================= ENTER ================= */
+
+cityInput.addEventListener(
+  "keypress",
+  (e)=>{
+
+    if(e.key==="Enter"){
+
+      searchBtn.click();
+
+    }
+
+});
+
+/* ================= MY LOCATION ================= */
+
+locationBtn.addEventListener(
+  "click",
+  ()=>{
+
+  if(!navigator.geolocation){
+
+    showError(
+      "Geolocation not supported"
+    );
+
+    return;
+
+  }
+
+  showLoader();
+
+  navigator.geolocation.getCurrentPosition(
+
+    async(position)=>{
+
+      const lat =
+      position.coords.latitude;
+
+      const lon =
+      position.coords.longitude;
+
+      await getLocationWeather(
+        lat,
+        lon
+      );
+
+    },
+
+    (error)=>{
+
+      if(error.code===1){
+
+        showError(
+          "Please allow location access"
+        );
+
+      }
+      else if(error.code===2){
+
+        showError(
+          "Location unavailable"
+        );
+
+      }
+      else if(error.code===3){
+
+        showError(
+          "Location timeout"
+        );
+
+      }
+      else{
+
+        showError(
+          "Location failed"
+        );
+
+      }
+
+    },
+
+    {
+      enableHighAccuracy:true,
+      timeout:15000,
+      maximumAge:0
+    }
+
+  );
+
+});
+
+/* ================= DEFAULT ================= */
+
+getWeather("Kolkata");
+/* ================= PERFECT MY LOCATION ================= */
+
+locationBtn.addEventListener("click", () => {
+
+  /* HTTPS CHECK */
+
+  if (
+    location.protocol !== "https:" &&
+    location.hostname !== "localhost" &&
+    location.hostname !== "127.0.0.1"
+  ) {
+
+    showError(
+      "Location works only on HTTPS or localhost"
+    );
+
+    return;
+
+  }
+
+  /* GEOLOCATION SUPPORT */
+
+  if (!navigator.geolocation) {
+
+    showError(
+      "Geolocation is not supported"
+    );
+
+    return;
+
+  }
+
+  /* SHOW LOADER */
+
+  weatherBox.innerHTML = `
+    <div class="loader"></div>
+  `;
+
+  /* REQUEST LOCATION */
+
+  navigator.geolocation.getCurrentPosition(
+
+    /* SUCCESS */
+
+    async (position) => {
+
+      try {
+
+        const lat =
+        position.coords.latitude;
+
+        const lon =
+        position.coords.longitude;
+
+        /* CURRENT WEATHER */
+
+        const weatherRes =
+        await fetch(
+
+          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+
+        );
+
+        if (!weatherRes.ok) {
+
+          throw new Error(
+            "Weather fetch failed"
+          );
+
+        }
+
+        const weatherData =
+        await weatherRes.json();
+
+        /* FORECAST */
+
+        const forecastRes =
+        await fetch(
+
+          `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+
+        );
+
+        if (!forecastRes.ok) {
+
+          throw new Error(
+            "Forecast fetch failed"
+          );
+
+        }
+
+        const forecastData =
+        await forecastRes.json();
+
+        /* UPDATE UI */
+
+        renderWeather(weatherData);
+
+        renderForecast(
+          forecastData.list
+        );
+
+        /* AUTO FILL CITY */
+
+        cityInput.value =
+        weatherData.name;
+
+      }
+
+      catch (error) {
+
+        console.log(error);
+
+        showError(
+          "Failed to load your location weather"
+        );
+
+      }
+
+    },
+
+    /* ERROR */
+
+    (error) => {
+
+      console.log(error);
+
+      /* PERMISSION DENIED */
+
+      if (error.code === error.PERMISSION_DENIED) {
+
+        showError(
+          "Please click ALLOW for location access"
+        );
+
+      }
+
+      /* POSITION UNAVAILABLE */
+
+      else if (
+        error.code === error.POSITION_UNAVAILABLE
+      ) {
+
+        showError(
+          "Turn ON device GPS / Location"
+        );
+
+      }
+
+      /* TIMEOUT */
+
+      else if (
+        error.code === error.TIMEOUT
+      ) {
+
+        showError(
+          "Location request timed out"
+        );
+
+      }
+
+      else {
+
+        showError(
+          "Unable to detect location"
+        );
+
+      }
+
+    },
+
+    /* OPTIONS */
+
+    {
+      enableHighAccuracy: true,
+      timeout: 25000,
+      maximumAge: 0
+    }
+
+  );
+
+});
+
+</script>
+
+</body>
+</html>
